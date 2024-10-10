@@ -6,7 +6,7 @@ Bottomline: only supports one Speed_x and Speed_y right now.
 """
 
 import numpy as np
-from gen_stuff.phiflow_runner import run_flow, save_flow
+from phiflow_runner import run_flow, save_flow
 from procedural_generation import generator
 from procedural_generation.sampling import Tag, sample_poisson_disk
 from pathlib import Path
