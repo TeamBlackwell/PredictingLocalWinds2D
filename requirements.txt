@@ -1,0 +1,7 @@
+black
+numpy
+torch
+torchvision
+torchaudio
+pandas
+black[jupyter]
