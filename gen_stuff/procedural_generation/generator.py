@@ -185,4 +185,4 @@ if False:  # __name__ != "__main__":
     proc_gen.generate_sample(show=True)
 
 if __name__ == "__main__":
-    batch_export("sample_data", n_exports=10)
+    batch_export(".", n_exports=10)

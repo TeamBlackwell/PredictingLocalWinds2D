@@ -15,6 +15,10 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
+import warnings
+
+warnings.filterwarnings("ignore")
+
 SEED = 100
 
 random.seed(SEED)
@@ -35,9 +39,6 @@ SPEED_Y = -5
 
 XR_choices = np.arange(40, MAP_SIZE - 40 + 1, 1)
 YR_choices = np.arange(40, MAP_SIZE - 40 + 1, 1)
-
-print(XR_choices)
-print(YR_choices)
 
 
 def create_rects(
