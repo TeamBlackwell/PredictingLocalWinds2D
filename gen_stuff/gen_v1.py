@@ -37,6 +37,7 @@ def create_rects(n_samples=100):
                 (sample_poisson_disk, Tag.SKYSCRAPER, {"density": 28}),
                 (sample_poisson_disk, Tag.HOUSE, {"density": 15, "n_buildings": 75}),
             ],
+            scale=MAP_SIZE,
         )
 
         generatingMachine.generate_sample()
