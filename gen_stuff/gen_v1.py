@@ -14,7 +14,7 @@ from procedural_generation.sampling import Tag, sample_poisson_disk
 from pathlib import Path
 import pandas as pd
 
-SEED = 42
+SEED = 100
 
 random.seed(SEED)
 np.random.seed(SEED)
@@ -52,14 +52,15 @@ def create_rects(
 
     for i in range(n_samples):
 
+        # XXX: Seeding here is not working, it causes a recursion error down the line. Looks like the poisson disk sampling is not deterministic.
         generatingMachine = generator.Generator(
             2,
             [
-                (sample_poisson_disk, Tag.SKYSCRAPER, {"density": 28, "seed": 42}),
+                (sample_poisson_disk, Tag.SKYSCRAPER, {"density": 28, "seed": None}),
                 (
                     sample_poisson_disk,
                     Tag.HOUSE,
-                    {"density": 15, "n_buildings": 75, "seed": 42},
+                    {"density": 15, "n_buildings": 75, "seed": None},
                 ),
             ],
             scale=MAP_SIZE,  # TODO: make a system which allows us to use map_size = 100 but scale = 80, essentially adding a border.

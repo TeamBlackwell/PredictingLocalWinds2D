@@ -30,7 +30,7 @@ def sample_poisson_disk(
     :return: X, Y numpy ndarrays
     """
     radius = 1 / density
-    engine = qmc.PoissonDisk(d=dimension, radius=radius, seed=seed)
+    engine = qmc.PoissonDisk(d=dimension, radius=radius, seed=None)
     sample = engine.random(n_buildings)  # number of buildings
     print(sample.shape)
     return sample[:, 0] * scale, sample[:, 1] * scale
