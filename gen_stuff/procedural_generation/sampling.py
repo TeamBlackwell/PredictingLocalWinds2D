@@ -17,6 +17,7 @@ def sample_poisson_disk(
     scale: int,
     density: int = 18,
     n_buildings: int = 25,
+    seed: int = None,
 ) -> Tuple[npt.NDArray, npt.NDArray]:
     """
     Samples using the poisson disk algorithm
@@ -29,7 +30,7 @@ def sample_poisson_disk(
     :return: X, Y numpy ndarrays
     """
     radius = 1 / density
-    engine = qmc.PoissonDisk(d=dimension, radius=radius)
+    engine = qmc.PoissonDisk(d=dimension, radius=radius, seed=seed)
     sample = engine.random(n_buildings)  # number of buildings
     print(sample.shape)
     return sample[:, 0] * scale, sample[:, 1] * scale

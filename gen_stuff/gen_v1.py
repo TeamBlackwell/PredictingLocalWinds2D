@@ -5,6 +5,7 @@ Bottomline: only supports one Speed_x and Speed_y right now.
 
 """
 
+import random
 from matplotlib import pyplot as plt
 import numpy as np
 from phiflow_runner import run_flow, save_flow
@@ -12,6 +13,11 @@ from procedural_generation import generator
 from procedural_generation.sampling import Tag, sample_poisson_disk
 from pathlib import Path
 import pandas as pd
+
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
 
 DATA_OUT_DIR = Path("../data_complete")
 DATA_RECT_DIR = DATA_OUT_DIR / "rects"
@@ -49,8 +55,12 @@ def create_rects(
         generatingMachine = generator.Generator(
             2,
             [
-                (sample_poisson_disk, Tag.SKYSCRAPER, {"density": 28}),
-                (sample_poisson_disk, Tag.HOUSE, {"density": 15, "n_buildings": 75}),
+                (sample_poisson_disk, Tag.SKYSCRAPER, {"density": 28, "seed": 42}),
+                (
+                    sample_poisson_disk,
+                    Tag.HOUSE,
+                    {"density": 15, "n_buildings": 75, "seed": 42},
+                ),
             ],
             scale=MAP_SIZE,  # TODO: make a system which allows us to use map_size = 100 but scale = 80, essentially adding a border.
         )
@@ -80,7 +90,7 @@ if __name__ == "__main__":
     DATA_WIND_FIELDS_DIR.mkdir(exist_ok=True)
 
     create_rects(
-        n_samples=1,
+        n_samples=1000,
         data_file_path=DATA_FILE_PATH,
         map_file_path=MAP_FILE_PATH,
         pre_time=100,
