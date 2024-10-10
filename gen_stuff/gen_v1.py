@@ -13,6 +13,7 @@ from procedural_generation import generator
 from procedural_generation.sampling import Tag, sample_poisson_disk
 from pathlib import Path
 import pandas as pd
+from tqdm import tqdm
 
 SEED = 100
 
@@ -50,7 +51,7 @@ def create_rects(
     data_df = pd.DataFrame(columns=["map_index", "xr", "yr"])
     map_df = pd.DataFrame(columns=["map_index", "speed_x", "speed_y", "rect_index"])
 
-    for i in range(n_samples):
+    for i in tqdm(range(n_samples)):
 
         # XXX: Seeding here is not working, it causes a recursion error down the line. Looks like the poisson disk sampling is not deterministic.
         generatingMachine = generator.Generator(
