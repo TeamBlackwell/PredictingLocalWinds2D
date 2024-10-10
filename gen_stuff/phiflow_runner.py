@@ -23,7 +23,7 @@ def run_flow(
     :param speed_x: float, the x speed
     :param speed_y: float, the y speed
 
-    :return v_data: np.ndarray of shape (2, map_size, map_size), the velocity data
+    :return v_data: np.ndarray of shape (map_size, map_size, 2). the velocity data
     """
 
     # for each file, run the flow
@@ -38,10 +38,9 @@ def run_flow(
     )
 
     cuboid_list = []
-    for start, end in rect_data:
-        cuboid_list.append(
-            flow.Box(flow.vec(x=start.x, y=start.y), flow.vec(x=end.x, y=end.y))
-        )
+    for rect in rect_data:
+        x1, y1, x2, y2 = rect
+        cuboid_list.append(flow.Box(flow.vec(x=x1, y=y1), flow.vec(x=x2, y=y2)))
 
     # make all of them obstacles
 
@@ -69,7 +68,11 @@ def run_flow(
         return v, p
 
     v_data, p_data = flow.iterate(
-        step, flow.batch(time=300), velocity, pressure, range=trange
+        step,
+        flow.batch(time=(pre_time + avg_time_window)),
+        velocity,
+        pressure,
+        range=trange,
     )
 
     # visualization
@@ -82,19 +85,41 @@ def run_flow(
     # )
     # plt.show()
 
-    return v_data.numpy()
+    v_numpy = v_data.numpy()
+
+    x_data = v_numpy[0]  # (T, H + 1, W)
+    y_data = v_numpy[1]  # (T, H, W + 1)
+
+    # TODO: check if the following remains consitent based on X and Y direction. For now, it is consistent.
+    # ignoring LAST in x_data
+    # ignoring FIRST in y_data
+
+    x_data = x_data[:, :-1, :]
+    y_data = y_data[:, :, 1:]
+
+    x_data = x_data[pre_time:, :, :]
+    y_data = y_data[pre_time:, :, :]
+
+    x_data = np.mean(x_data, axis=0)
+    y_data = np.mean(y_data, axis=0)
+
+    v_stacked = np.stack((x_data, y_data), axis=0)  # (2, H, W)
+    # change to (H, W, 2)
+    v_stacked = np.moveaxis(v_stacked, 0, -1)
+
+    return v_stacked
 
 
 def save_flow(flow_data: np.ndarray, path: Path | str) -> None:
     """
-    Save the flow data, which is a np.ndarray of shape (2, map_size, map_size) to the given path.
+    Save the flow data, which is a np.ndarray of shape (map_size, map_size, 2) to the given path.
 
     Saves any numpy array, of any shape. Saves to the given path. Path should end with .npy.
     """
     if isinstance(path, str):
         path = Path(path)
 
-    if not path.endswith(".npy"):
+    if path.suffix == "npy":
         raise ValueError("Path should end with .npy")
 
     np.save(path, flow_data)
