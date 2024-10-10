@@ -5,3 +5,4 @@ torchvision
 torchaudio
 pandas
 black[jupyter]
+rich
