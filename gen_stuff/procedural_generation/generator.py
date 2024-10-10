@@ -3,8 +3,8 @@ import numpy.typing as npt
 import numpy as np
 
 from typing import Callable, Dict, List, Tuple
-from qtree import QTree, find_children, Point
-from sampling import Tag, sample_poisson_disk
+from .qtree import QTree, find_children, Point
+from .sampling import Tag, sample_poisson_disk
 
 
 class Generator(object):
