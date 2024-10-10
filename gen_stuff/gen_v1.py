@@ -1,3 +1,10 @@
+"""
+A basic version of generation.
+
+Bottomline: only supports one Speed_x and Speed_y right now.
+
+"""
+
 from procedural_generation import generator
 from procedural_generation.sampling import Tag, sample_poisson_disk
 from pathlib import Path
