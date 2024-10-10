@@ -97,3 +97,7 @@ if __name__ == "__main__":
         pre_time=100,
         avg_time_window=200,
     )
+
+    # shapes:
+    # rect: (n, 4)
+    # map: (map_size, map_size, 2)
