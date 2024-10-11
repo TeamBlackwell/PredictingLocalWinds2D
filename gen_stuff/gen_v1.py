@@ -61,7 +61,9 @@ def create_rects(
 
     start_idx = pre_done_count + 1 if pre_done_count > 0 else 0
 
-    for i in trange(start_idx, n_samples):
+    print(f"Starting from {start_idx}, going till {start_idx + n_samples}")
+
+    for i in trange(start_idx, start_idx + n_samples):
 
         # XXX: Seeding here is not working, it causes a recursion error down the line. Looks like the poisson disk sampling is not deterministic.
         generatingMachine = generator.Generator(
@@ -86,8 +88,8 @@ def create_rects(
                 building_array, pre_time, avg_time_window, MAP_SIZE, SPEED_X, SPEED_Y
             )
             save_flow(flow_data, DATA_WIND_FIELDS_DIR / f"{i}_m.npy")
-        except ValueError:
-            print(f"Failed to generate flow for {i}")
+        except ValueError as e:
+            print(f"Failed to generate flow for {i} - {e}")
             continue
 
         xr = np.random.choice(XR_choices)
@@ -106,12 +108,12 @@ if __name__ == "__main__":
     DATA_WIND_FIELDS_DIR.mkdir(exist_ok=True)
 
     create_rects(
-        n_samples=1000,
+        n_samples=500,
         data_file_path=DATA_FILE_PATH,
         map_file_path=MAP_FILE_PATH,
         pre_time=100,
         avg_time_window=200,
-        pre_done_count=162,
+        pre_done_count=300,
     )
 
     # shapes:

@@ -22,6 +22,9 @@ class LocalWindFieldDataset(Dataset):
 
         self.map_data.set_index("map_id", inplace=True)
 
+        # self.cdt = self.config_data
+        # self.mdt = self.map_data
+
     def __len__(self):
         return len(self.config_data)
 
@@ -44,6 +47,7 @@ class LocalWindFieldDataset(Dataset):
         local_winds = winds[startcoord[0] : endcoord[0], startcoord[1] : endcoord[1]]
 
         if np.isnan(local_winds).any():
+            print("BIG ERROR: Nan values in local winds")
             return None
 
         return torch.tensor(local_winds, dtype=torch.float64)
@@ -64,7 +68,13 @@ class LocalWindFieldDataset(Dataset):
 
         local_winds = self._get_local_winds(robo_coords, winds)
         if local_winds is None:
-            print(idx)
+            # self.cdt = self.cdt.drop(idx)
+            # self.mdt = self.mdt.drop(robot_config["map_id"])
+
+            # self.cdt.to_csv("myfacedata.csv", index=False)
+            # self.mdt["map_id"] = self.mdt.index
+            # self.mdt.to_csv("myfacemap.csv", index=False)
+
             local_winds = torch.zeros(
                 2 * self.local + 1, 2 * self.local + 1, 2, dtype=torch.float64
             )

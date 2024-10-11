@@ -42,16 +42,15 @@ def main():
     validation_losses = []
 
     # training loop
-    for epoch in (ep_pbar := range(1, NUM_EPOCHS + 1)):
+    for epoch in (ep_pbar := tqdm(range(1, NUM_EPOCHS + 1))):
 
-        # ep_pbar.set_description(f"Doing Epoch {epoch}/{NUM_EPOCHS}")
+        ep_pbar.set_description(f"Doing Epoch {epoch}/{NUM_EPOCHS}")
 
         # TRAINING SECTION
         train_loss = 0.0
 
         model.train()
-        for sample in (pbar := train_loader):
-            continue
+        for i, sample in enumerate(pbar := tqdm(train_loader), 1):
 
             lidar, wind_at_robot, winds_y = sample
 
@@ -68,13 +67,12 @@ def main():
 
             train_loss += loss.item() * X_val.size(0)
 
-            pbar.set_description(f"Training. Loss: {train_loss:.4f}")
+            pbar.set_description(f"Training. Loss: {(train_loss / i):.4f}")
 
         # EVALUATION
         valid_loss = 0.0
         model.eval()
-        for sample in (pbar := val_loader):
-            continue
+        for i, sample in enumerate(pbar := tqdm(val_loader), 1):
 
             lidar, wind_at_robot, winds_y = sample
             X_val = torch.cat((lidar, wind_at_robot), dim=1)
@@ -83,7 +81,7 @@ def main():
 
             valid_loss += loss.item() * X_val.size(0)
 
-            pbar.set_description(f"Validating. Loss: {valid_loss:.4f}")
+            pbar.set_description(f"Validating. Loss: {(valid_loss / i):.4f}")
 
         train_loss = train_loss / train_size_n
         valid_loss = valid_loss / val_size_n
@@ -91,10 +89,9 @@ def main():
         training_losses.append(train_loss)
         validation_losses.append(valid_loss)
 
-        break
-        # tqdm.write(
-        #     f"Epoch {epoch}/{NUM_EPOCHS} Summary: Train Loss: {train_loss:.6f} | Validation Loss: {valid_loss:.6f}\n"
-        # )
+        tqdm.write(
+            f"Epoch {epoch}/{NUM_EPOCHS} Summary: Train Loss: {train_loss:.6f} | Validation Loss: {valid_loss:.6f}\n"
+        )
 
     # Plot the loss curve
     plt.figure()
