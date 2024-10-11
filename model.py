@@ -9,9 +9,9 @@ class BasicMLP(nn.Module):
         output_size = (
             ((local * 2) + 1) ** 2
         ) * 2  # Adjusted for the additional dimension
-        self.fc1 = nn.Linear(input_size, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, output_size)
+        self.fc1 = nn.Linear(input_size, 2048)
+        self.fc2 = nn.Linear(2048, 2048)
+        self.fc3 = nn.Linear(2048, output_size)
         self.relu = nn.ReLU()
         self.local = local
 
