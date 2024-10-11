@@ -13,10 +13,10 @@ class BasicMLP(nn.Module):
             ((local * 2) + 1) ** 2
         ) * 2  # Adjusted for the additional dimension
 
-        self.fc1 = nn.Linear(self.input_size, 2048, dtype=torch.float64, device=device)
-        self.fc2 = nn.Linear(2048, 2048, dtype=torch.float64, device=device)
-        self.fc3 = nn.Linear(2048, 2048, dtype=torch.float64, device=device)
-        self.fc4 = nn.Linear(2048, self.output_size, dtype=torch.float64, device=device)
+        self.fc1 = nn.Linear(self.input_size, 2048, dtype=torch.float32, device=device)
+        self.fc2 = nn.Linear(2048, 2048, dtype=torch.float32, device=device)
+        self.fc3 = nn.Linear(2048, 2048, dtype=torch.float32, device=device)
+        self.fc4 = nn.Linear(2048, self.output_size, dtype=torch.float32, device=device)
         self.relu = nn.ReLU()
         self.local = local
 

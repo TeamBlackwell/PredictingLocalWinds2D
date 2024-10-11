@@ -61,7 +61,7 @@ class LocalWindFieldDataset(Dataset):
             print("BIG ERROR: Nan values in local winds")
             return None
 
-        return torch.tensor(local_winds, dtype=torch.float64, device=self.device)
+        return torch.tensor(local_winds, dtype=torch.float32, device=self.device)
 
     def __getitem__(self, idx):
 
@@ -96,14 +96,14 @@ class LocalWindFieldDataset(Dataset):
         rects = np.load(rect_path)
         # lidar = getLidar(rects)
         lidar = torch.rand(
-            360, dtype=torch.float64, device=self.device
+            360, dtype=torch.float32, device=self.device
         )  # TODO: TEMPORARY
 
         return (
             lidar,
             torch.tensor(
                 winds[robo_coords[0], robo_coords[1]],
-                dtype=torch.float64,
+                dtype=torch.float32,
                 device=self.device,
             ),
             local_winds,
