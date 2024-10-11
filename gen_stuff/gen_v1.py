@@ -107,7 +107,7 @@ if __name__ == "__main__":
         map_file_path=MAP_FILE_PATH,
         pre_time=100,
         avg_time_window=200,
-        pre_done_count=152,
+        pre_done_count=162,
     )
 
     # shapes:
