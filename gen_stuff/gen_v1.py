@@ -6,14 +6,13 @@ Bottomline: only supports one Speed_x and Speed_y right now.
 """
 
 import random
-from matplotlib import pyplot as plt
 import numpy as np
 from phiflow_runner import run_flow, save_flow
 from procedural_generation import generator
 from procedural_generation.sampling import Tag, sample_poisson_disk
 from pathlib import Path
 import pandas as pd
-from tqdm import tqdm
+from tqdm import trange
 
 import warnings
 
@@ -47,12 +46,13 @@ def create_rects(
     map_file_path=MAP_FILE_PATH,
     pre_time: int = 100,
     avg_time_window: int = 200,
+    pre_done_count: int = -1,
 ):
 
     data_df = pd.DataFrame(columns=["map_index", "xr", "yr"])
     map_df = pd.DataFrame(columns=["map_index", "speed_x", "speed_y", "rect_index"])
 
-    for i in tqdm(range(n_samples)):
+    for i in trange(pre_done_count + 1, n_samples):
 
         # XXX: Seeding here is not working, it causes a recursion error down the line. Looks like the poisson disk sampling is not deterministic.
         generatingMachine = generator.Generator(
@@ -98,6 +98,7 @@ if __name__ == "__main__":
         map_file_path=MAP_FILE_PATH,
         pre_time=100,
         avg_time_window=200,
+        pre_done_count=152,
     )
 
     # shapes:
