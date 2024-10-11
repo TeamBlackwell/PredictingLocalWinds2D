@@ -11,7 +11,16 @@ from torch.utils.data import Dataset, DataLoader
 
 class LocalWindFieldDataset(Dataset):
 
-    def __init__(self, config_file, map_file, rect_fol, map_fol, root_dir="", local=2):
+    def __init__(
+        self,
+        config_file,
+        map_file,
+        rect_fol,
+        map_fol,
+        root_dir="",
+        local=2,
+        device=torch.device("cpu"),
+    ):
 
         print("Local field set to: ", local)
         self.config_data = pd.read_csv(os.path.join(root_dir, config_file))
@@ -21,6 +30,8 @@ class LocalWindFieldDataset(Dataset):
         self.local = local
 
         self.map_data.set_index("map_id", inplace=True)
+
+        self.device = device
 
         # self.cdt = self.config_data
         # self.mdt = self.map_data
@@ -50,7 +61,7 @@ class LocalWindFieldDataset(Dataset):
             print("BIG ERROR: Nan values in local winds")
             return None
 
-        return torch.tensor(local_winds, dtype=torch.float64)
+        return torch.tensor(local_winds, dtype=torch.float64, device=self.device)
 
     def __getitem__(self, idx):
 
@@ -76,14 +87,24 @@ class LocalWindFieldDataset(Dataset):
             # self.mdt.to_csv("myfacemap.csv", index=False)
 
             local_winds = torch.zeros(
-                2 * self.local + 1, 2 * self.local + 1, 2, dtype=torch.float64
+                2 * self.local + 1,
+                2 * self.local + 1,
+                2,
+                dtype=torch.float64,
+                device=self.device,
             )
         rects = np.load(rect_path)
         # lidar = getLidar(rects)
-        lidar = torch.rand(360, dtype=torch.float64)  # TODO: TEMPORARY
+        lidar = torch.rand(
+            360, dtype=torch.float64, device=self.device
+        )  # TODO: TEMPORARY
 
         return (
             lidar,
-            torch.tensor(winds[robo_coords[0], robo_coords[1]], dtype=torch.float64),
+            torch.tensor(
+                winds[robo_coords[0], robo_coords[1]],
+                dtype=torch.float64,
+                device=self.device,
+            ),
             local_winds,
         )

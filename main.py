@@ -8,11 +8,17 @@ import torch
 from dataset import LocalWindFieldDataset
 from model import BasicMLP
 from tqdm import tqdm
+from sys import platform
 
 NUM_EPOCHS = 100
 LR = 0.001
 LOCAL_FIELD_SIZE = 15
 TRAIN_SIZE = 0.8
+
+if platform == "darwin":
+    DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+else:
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def main():
@@ -23,6 +29,7 @@ def main():
         map_fol="wind_fields",
         root_dir="data_complete",
         local=LOCAL_FIELD_SIZE,
+        device=DEVICE,
     )
     # split dataset into training and validation
     train_size_n = int(TRAIN_SIZE * len(local_wind_field_dataset))
@@ -34,7 +41,7 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
 
-    model = BasicMLP(local=local_wind_field_dataset.local)
+    model = BasicMLP(local=local_wind_field_dataset.local, device=DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     criterion = torch.nn.MSELoss()
 
