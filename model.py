@@ -5,14 +5,18 @@ import torch.nn as nn
 class BasicMLP(nn.Module):
     def __init__(self, local):
         super(BasicMLP, self).__init__()
-        input_size = 360 + 2  # 360-dimensional vector + 2 for wind at robot's location
-        output_size = (
+
+        self.input_size = (
+            360 + 2
+        )  # 360-dimensional vector + 2 for wind at robot's location
+        self.output_size = (
             ((local * 2) + 1) ** 2
         ) * 2  # Adjusted for the additional dimension
-        self.fc1 = nn.Linear(input_size, 2048)
-        self.fc2 = nn.Linear(2048, 2048)
-        self.fc3 = nn.Linear(2048, 2048)
-        self.fc4 = nn.Linear(2048, output_size)
+
+        self.fc1 = nn.Linear(self.input_size, 2048, dtype=torch.float64)
+        self.fc2 = nn.Linear(2048, 2048, dtype=torch.float64)
+        self.fc3 = nn.Linear(2048, 2048, dtype=torch.float64)
+        self.fc4 = nn.Linear(2048, self.output_size, dtype=torch.float64)
         self.relu = nn.ReLU()
         self.local = local
 

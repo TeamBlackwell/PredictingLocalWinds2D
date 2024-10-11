@@ -81,10 +81,14 @@ def create_rects(
         generatingMachine.export(DATA_RECT_DIR / f"{i}_r.npy")
 
         building_array = np.array(generatingMachine.buildings)
-        flow_data = run_flow(
-            building_array, pre_time, avg_time_window, MAP_SIZE, SPEED_X, SPEED_Y
-        )
-        save_flow(flow_data, DATA_WIND_FIELDS_DIR / f"{i}_m.npy")
+        try:
+            flow_data = run_flow(
+                building_array, pre_time, avg_time_window, MAP_SIZE, SPEED_X, SPEED_Y
+            )
+            save_flow(flow_data, DATA_WIND_FIELDS_DIR / f"{i}_m.npy")
+        except ValueError:
+            print(f"Failed to generate flow for {i}")
+            continue
 
         xr = np.random.choice(XR_choices)
         yr = np.random.choice(YR_choices)

@@ -7,54 +7,102 @@ from rich import print
 import torch
 from dataset import LocalWindFieldDataset
 from model import BasicMLP
+from tqdm import tqdm
 
 NUM_EPOCHS = 100
 LR = 0.001
+LOCAL_FIELD_SIZE = 15
+TRAIN_SIZE = 0.8
 
 
 def main():
     local_wind_field_dataset = LocalWindFieldDataset(
-        config_file="config.csv",
-        map_file="map.csv",
+        config_file="data.csv",
+        map_file="map_mapping.csv",
         rect_fol="rects",
-        map_fol="maps",
-        root_dir="data",
-        local=3,
+        map_fol="wind_fields",
+        root_dir="data_complete",
+        local=LOCAL_FIELD_SIZE,
     )
+    # split dataset into training and validation
+    train_size_n = int(TRAIN_SIZE * len(local_wind_field_dataset))
+    val_size_n = len(local_wind_field_dataset) - train_size_n
+    train_dataset, val_dataset = torch.utils.data.random_split(
+        local_wind_field_dataset, [train_size_n, val_size_n]
+    )
+
+    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
+
     model = BasicMLP(local=local_wind_field_dataset.local)
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     criterion = torch.nn.MSELoss()
 
-    loss_values = []  # List to store loss values
+    training_losses = []
+    validation_losses = []
 
-    for epoch in range(NUM_EPOCHS):
+    # training loop
+    for epoch in (ep_pbar := range(1, NUM_EPOCHS + 1)):
+
+        # ep_pbar.set_description(f"Doing Epoch {epoch}/{NUM_EPOCHS}")
+
+        # TRAINING SECTION
+        train_loss = 0.0
+
         model.train()
-        running_loss = 0.0
-        print(f"Epoch {epoch+1}")
-        for i, sample in enumerate(local_wind_field_dataset, 1):
+        for sample in (pbar := train_loader):
+            continue
+
             lidar, wind_at_robot, winds_y = sample
+
+            # print(lidar.shape, wind_at_robot.shape, winds_y.shape)
+            # (Batch, 360), (Batch, 2), (Batch, 2*local + 1, 2*local + 1, 2)
+            X_val = torch.cat((lidar, wind_at_robot), dim=1)
+
             optimizer.zero_grad()
 
-            lidar = lidar.float()
-            wind_at_robot = wind_at_robot.float()
-            winds_y = winds_y.float()
-
-            outputs = model(torch.cat((lidar, wind_at_robot.flatten()), dim=0))
-            loss = criterion(outputs, winds_y)
+            output = model(X_val)
+            loss = criterion(output, winds_y)
             loss.backward()
             optimizer.step()
-            running_loss += loss.item()
 
-        average_loss = running_loss / len(local_wind_field_dataset)
-        loss_values.append(average_loss)  # Append average loss of the epoch
-        print(f"\t Average Loss: {average_loss:.4f}")
+            train_loss += loss.item() * X_val.size(0)
+
+            pbar.set_description(f"Training. Loss: {train_loss:.4f}")
+
+        # EVALUATION
+        valid_loss = 0.0
+        model.eval()
+        for sample in (pbar := val_loader):
+            continue
+
+            lidar, wind_at_robot, winds_y = sample
+            X_val = torch.cat((lidar, wind_at_robot), dim=1)
+            output = model(X_val)
+            loss = criterion(output, winds_y)
+
+            valid_loss += loss.item() * X_val.size(0)
+
+            pbar.set_description(f"Validating. Loss: {valid_loss:.4f}")
+
+        train_loss = train_loss / train_size_n
+        valid_loss = valid_loss / val_size_n
+
+        training_losses.append(train_loss)
+        validation_losses.append(valid_loss)
+
+        break
+        # tqdm.write(
+        #     f"Epoch {epoch}/{NUM_EPOCHS} Summary: Train Loss: {train_loss:.6f} | Validation Loss: {valid_loss:.6f}\n"
+        # )
 
     # Plot the loss curve
     plt.figure()
-    plt.plot(range(1, NUM_EPOCHS + 1), loss_values, label="Training Loss")
+    plt.plot(range(1, NUM_EPOCHS + 1), training_losses, label="Training Loss")
+    plt.plot(range(1, NUM_EPOCHS + 1), validation_losses, label="Validation Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
-    plt.title("Training Loss Curve")
+    plt.title("Loss vs Epoch Curve")
     plt.legend()
     plt.show()
 

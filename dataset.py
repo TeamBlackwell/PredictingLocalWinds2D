@@ -20,31 +20,39 @@ class LocalWindFieldDataset(Dataset):
         self.map_file_path = os.path.join(root_dir, map_fol)
         self.local = local
 
+        self.map_data.set_index("map_id", inplace=True)
+
     def __len__(self):
         return len(self.config_data)
 
-    def getLocalWinds(self, robo_coords, winds):
+    def _get_local_winds(self, robo_coords, winds):
         startcoord = robo_coords - self.local
         endcoord = robo_coords + self.local + 1
+
         if (
             startcoord[0] < 0
             or startcoord[1] < 0
             or endcoord[0] >= winds.shape[0]
             or endcoord[1] >= winds.shape[1]
         ):
-
+            # TODO: can this instead be checked in the beginning, so this index is never reached?
+            # as in data cleaning
             print("Out of bounds")
 
             return None
 
         local_winds = winds[startcoord[0] : endcoord[0], startcoord[1] : endcoord[1]]
 
+        if np.isnan(local_winds).any():
+            return None
+
         return torch.tensor(local_winds, dtype=torch.float64)
 
     def __getitem__(self, idx):
 
         robot_config = self.config_data.iloc[idx]
-        map_config = self.map_data.iloc[robot_config["map_id"]]
+        map_config = self.map_data.loc[robot_config["map_id"]]
+
         rect_path = os.path.join(
             self.rect_file_path, str(map_config["rect_id"]) + "_r.npy"
         )
@@ -53,16 +61,19 @@ class LocalWindFieldDataset(Dataset):
         )
         winds = np.load(winds_path)
         robo_coords = torch.tensor([robot_config["xr"], robot_config["yr"]])
-        # print(f"Robot Coordinates: {robo_coords}")
-        local_winds = self.getLocalWinds(robo_coords, winds)
-        rect = np.load(rect_path)
 
+        local_winds = self._get_local_winds(robo_coords, winds)
+        if local_winds is None:
+            print(idx)
+            local_winds = torch.zeros(
+                2 * self.local + 1, 2 * self.local + 1, 2, dtype=torch.float64
+            )
+        rects = np.load(rect_path)
         # lidar = getLidar(rects)
-
-        lidar = torch.rand(360, dtype=torch.float64)
+        lidar = torch.rand(360, dtype=torch.float64)  # TODO: TEMPORARY
 
         return (
             lidar,
-            torch.tensor(winds[robo_coords[0]][robo_coords[0]], dtype=torch.float64),
+            torch.tensor(winds[robo_coords[0], robo_coords[1]], dtype=torch.float64),
             local_winds,
         )

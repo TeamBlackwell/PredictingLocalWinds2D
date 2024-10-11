@@ -113,6 +113,9 @@ def run_flow(
     # change to (H, W, 2)
     v_stacked = np.moveaxis(v_stacked, 0, -1)
 
+    if np.isnan(v_stacked).any():
+        raise ValueError("NANs in the velocity data")
+
     return v_stacked
 
 
