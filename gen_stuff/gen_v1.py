@@ -56,8 +56,14 @@ def create_rects(
         data_df.to_csv(data_file_path, index=False)
         map_df.to_csv(map_file_path, index=False)
     else:
+        if not data_file_path.exists() or not map_file_path.exists():
+            raise ValueError(
+                f"Pre-done count is {pre_done_count} but data or map file does not exist."
+            )
         data_df = pd.read_csv(data_file_path)
         map_df = pd.read_csv(map_file_path)
+        map_df = map_df[["map_id", "speed_x", "speed_y", "rect_id"]]
+        data_df = data_df[["map_id", "xr", "yr"]]
 
     start_idx = pre_done_count + 1 if pre_done_count > 0 else 0
 
