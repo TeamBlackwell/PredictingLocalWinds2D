@@ -69,11 +69,15 @@ def create_rects(
         generatingMachine = generator.Generator(
             2,
             [
-                (sample_poisson_disk, Tag.SKYSCRAPER, {"density": 28, "seed": None}),
+                (
+                    sample_poisson_disk,
+                    Tag.SKYSCRAPER,
+                    {"density": 28, "seed": None, "n_buildings": 20},
+                ),
                 (
                     sample_poisson_disk,
                     Tag.HOUSE,
-                    {"density": 15, "n_buildings": 75, "seed": None},
+                    {"density": 15, "n_buildings": 20, "seed": None},
                 ),
             ],
             scale=MAP_SIZE,  # TODO: make a system which allows us to use map_size = 100 but scale = 80, essentially adding a border.
@@ -113,7 +117,7 @@ if __name__ == "__main__":
         map_file_path=MAP_FILE_PATH,
         pre_time=100,
         avg_time_window=200,
-        pre_done_count=300,
+        pre_done_count=350,
     )
 
     # shapes:
