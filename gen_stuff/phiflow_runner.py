@@ -88,8 +88,8 @@ def run_flow(
     #     overlay="list",
     # )
     # plt.show()
-    _step.traces.clear()
-    _step.recorded_mappings.clear()
+    # _step.traces.clear()
+    # _step.recorded_mappings.clear()
 
     v_numpy = v_data.numpy()
 
