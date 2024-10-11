@@ -4,6 +4,20 @@ from phi.torch import flow
 from tqdm import trange
 
 
+@flow.math.jit_compile
+def _step(v, p, ob_list, bndry_mask, spd_x, spd_y):
+
+    v = flow.advect.semi_lagrangian(v, v, 1.0)
+    v = v * (1 - bndry_mask) + bndry_mask * (
+        spd_x,
+        spd_y,
+    )  # make sure you dont simulat OOB
+    v, p = flow.fluid.make_incompressible(
+        v, ob_list, flow.Solve("auto", 1e-5, x0=p)
+    )  # make it do the boundary thign
+    return v, p, ob_list, bndry_mask, spd_x, spd_y
+
+
 def run_flow(
     rect_data: np.ndarray,
     pre_time: int,
@@ -26,52 +40,42 @@ def run_flow(
     :return v_data: np.ndarray of shape (map_size, map_size, 2). the velocity data
     """
 
-    # for each file, run the flow
-    SPEEDS = flow.tensor([speed_x, speed_y])
-
-    velocity = flow.StaggeredGrid(
-        SPEEDS,
-        flow.ZERO_GRADIENT,
-        x=map_size,
-        y=map_size,
-        bounds=flow.Box(x=map_size, y=map_size),
-    )
-
+    # for each cuboid, make a box
     cuboid_list = []
     for rect in rect_data:
         x1, y1, x2, y2 = rect
         cuboid_list.append(flow.Box(flow.vec(x=x1, y=y1), flow.vec(x=x2, y=y2)))
 
     # make all of them obstacles
-
     obstacle_list = []
     for cuboid in cuboid_list:
         obstacle_list.append(flow.Obstacle(cuboid))
 
-    BOUNDARY_BOX = flow.Box(x=(-1 * flow.INF, 0.5), y=None)
-    BOUNDARY_MASK = flow.StaggeredGrid(
-        BOUNDARY_BOX, velocity.extrapolation, velocity.bounds, velocity.resolution
-    )
+    speeds = flow.tensor([speed_x, speed_y])
 
+    # velociry grid, boundary box, boundary mask, pressure
+    velocity = flow.StaggeredGrid(
+        speeds,
+        flow.ZERO_GRADIENT,
+        x=map_size,
+        y=map_size,
+        bounds=flow.Box(x=map_size, y=map_size),
+    )
+    boundary_box = flow.Box(x=(-1 * flow.INF, 0.5), y=None)
+    boundary_mask = flow.StaggeredGrid(
+        boundary_box, velocity.extrapolation, velocity.bounds, velocity.resolution
+    )
     pressure = None
 
-    @flow.math.jit_compile
-    def step(v, p):
-        v = flow.advect.semi_lagrangian(v, v, 1.0)
-        v = v * (1 - BOUNDARY_MASK) + BOUNDARY_MASK * (
-            speed_x,
-            speed_y,
-        )  # make sure you dont simulat OOB
-        v, p = flow.fluid.make_incompressible(
-            v, obstacle_list, flow.Solve("auto", 1e-5, x0=p)
-        )  # make it do the boundary thign
-        return v, p
-
-    v_data, p_data = flow.iterate(
-        step,
+    v_data, p_data, _, _, _, _ = flow.iterate(
+        _step,
         flow.batch(time=(pre_time + avg_time_window)),
         velocity,
         pressure,
+        obstacle_list,
+        boundary_mask,
+        speed_x,
+        speed_y,
         range=trange,
     )
 
@@ -84,6 +88,8 @@ def run_flow(
     #     overlay="list",
     # )
     # plt.show()
+    _step.traces.clear()
+    _step.recorded_mappings.clear()
 
     v_numpy = v_data.numpy()
 
