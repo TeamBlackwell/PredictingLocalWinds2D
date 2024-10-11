@@ -9,7 +9,6 @@ from dataset import LocalWindFieldDataset
 from model import BasicMLP
 
 NUM_EPOCHS = 100
-
 LR = 0.001
 
 
@@ -25,6 +24,9 @@ def main():
     model = BasicMLP(local=local_wind_field_dataset.local)
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     criterion = torch.nn.MSELoss()
+
+    loss_values = []  # List to store loss values
+
     for epoch in range(NUM_EPOCHS):
         model.train()
         running_loss = 0.0
@@ -42,7 +44,19 @@ def main():
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-        print(f"\t Average Loss: {running_loss/len(local_wind_field_dataset):.4f}")
+
+        average_loss = running_loss / len(local_wind_field_dataset)
+        loss_values.append(average_loss)  # Append average loss of the epoch
+        print(f"\t Average Loss: {average_loss:.4f}")
+
+    # Plot the loss curve
+    plt.figure()
+    plt.plot(range(1, NUM_EPOCHS + 1), loss_values, label="Training Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training Loss Curve")
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":

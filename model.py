@@ -11,7 +11,8 @@ class BasicMLP(nn.Module):
         ) * 2  # Adjusted for the additional dimension
         self.fc1 = nn.Linear(input_size, 2048)
         self.fc2 = nn.Linear(2048, 2048)
-        self.fc3 = nn.Linear(2048, output_size)
+        self.fc3 = nn.Linear(2048, 2048)
+        self.fc4 = nn.Linear(2048, output_size)
         self.relu = nn.ReLU()
         self.local = local
 
@@ -21,6 +22,8 @@ class BasicMLP(nn.Module):
         x = self.fc2(x)
         x = self.relu(x)
         x = self.fc3(x)
+        x = self.relu(x)
+        x = self.fc4(x)
         x = x.view(
             -1, self.local * 2 + 1, self.local * 2 + 1, 2
         )  # Reshape to the desired output size
